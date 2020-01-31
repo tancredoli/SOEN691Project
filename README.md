@@ -1,1 +1,3 @@
 # SOEN691Project
+## Abstract
+This report will perform analysis on a dataset which contains personal information and related annual income. The dataset is Adult data set from UCI machine learning repository provided by Ronny Kohavi and Barry Becker. First, we will preprocess this dataset to get the training set and testing set. Then use the training set to train a random forest classifier and a k-means clustering classifier in Spark, and try to predict whether a person has an annual income over 50k using the test set. Second, we will analyze the results and also compare the accuracy and cost of time of these two techniques. 
