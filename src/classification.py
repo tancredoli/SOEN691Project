@@ -6,6 +6,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
 
+
 def predictor(model, grid, training, testing, model_name):
     # 4.3 evaluator
     evaluator = MulticlassClassificationEvaluator(predictionCol='prediction', labelCol='class')
@@ -71,16 +72,17 @@ def knn_classify(training, testing, labelCol, featuresCol):
     training = training.toPandas()
     testing = testing.toPandas()
     if featuresCol.startswith("pca"):
+        # convert dense matrix into multi-dimention array
         x_train_series = training[featuresCol].values.reshape(-1, 1)
-        x_train = np.apply_along_axis(lambda x : x[0], 1, x_train_series)
+        x_train = np.apply_along_axis(lambda x: x[0], 1, x_train_series)
         x_test_series = testing[featuresCol].values.reshape(-1, 1)
-        x_test = np.apply_along_axis(lambda x : x[0], 1, x_test_series)
+        x_test = np.apply_along_axis(lambda x: x[0], 1, x_test_series)
     else:
         # convert sparse matrix into multi-dimention array
         x_train_series = training[featuresCol].apply(lambda x: np.array(x.toArray())).values.reshape(-1, 1)
-        x_train = np.apply_along_axis(lambda x : x[0], 1, x_train_series)
+        x_train = np.apply_along_axis(lambda x: x[0], 1, x_train_series)
         x_test_series = testing[featuresCol].apply(lambda x: np.array(x.toArray())).values.reshape(-1, 1)
-        x_test = np.apply_along_axis(lambda x : x[0], 1, x_test_series)
+        x_test = np.apply_along_axis(lambda x: x[0], 1, x_test_series)
     y_train = training[labelCol].values
     y_test = testing[labelCol].values
 
@@ -93,17 +95,15 @@ def knn_classify(training, testing, labelCol, featuresCol):
                         cv=5,
                         n_jobs=8)
     # training models
-    gscv.fit(x_train,y_train)
+    gscv.fit(x_train, y_train)
 
     # get prediction
     y_pred = gscv.predict(x_test)
 
     # evaluation
-    print("KNeighborsClassifier accuracy: " + str(accuracy_score(y_test,y_pred)))
-    print("KNeighborsClassifier f1      : " + str(f1_score(y_test,y_pred)))
+    print("KNeighborsClassifier accuracy: " + str(accuracy_score(y_test, y_pred)))
+    print("KNeighborsClassifier f1      : " + str(f1_score(y_test, y_pred)))
 
+    # print best estimator params
+    print("Best estimator :: ", gscv.best_estimator_)
 
-    # 4.4 print best hyper-parameter
-    print("Best estimator :: " , gscv.best_estimator_)
-
-    pass
