@@ -22,12 +22,12 @@ def undersample_majority():
     pass
 
 
-def plot_correlation_matrix(pearsonCorr, threshold = 0.7):
+def plot_correlation_matrix(pearsonCorr, threshold=0.7):
     plt.figure(figsize=(8, 8))
     strong_index = [item for item in np.argwhere(pearsonCorr >= threshold) if item[0] != item[1] and item[0] < item[1]]
     plt.imshow(pearsonCorr, interpolation='nearest', cmap=plt.cm.bwr)
     plt.colorbar()
-    plt.savefig("." + constants.OUTPUT_DIR+"/correlation_matrix")
+    plt.savefig("." + constants.OUTPUT_DIR + "/correlation_matrix")
     return strong_index
 
 
@@ -39,14 +39,14 @@ spark = SparkSession \
 # read from file
 df = spark.read.csv("." + constants.MUSHROOM_DATASET_withLABEL, header=True).toPandas()
 # step 1: convert labels from str into integer
-df["class"] = df["class"].replace(["e","p"],[0,1]).astype(int)
+df["class"] = df["class"].replace(["e", "p"], [0, 1]).astype(int)
 
 # step 2: drop features columns with only one distinct value
 df = df[[column for column in list(df) if len(df[column].unique()) > 1]]
 
 # step 3: impute the missing value by most frequent item in that column
 cols = df.columns
-si = SimpleImputer(missing_values="?",strategy="most_frequent")
+si = SimpleImputer(missing_values="?", strategy="most_frequent")
 trans_df = si.fit_transform(df)
 df = spark.createDataFrame(pd.DataFrame(data=trans_df, columns=cols)).cache()
 ins_total = df.count()
@@ -67,17 +67,18 @@ feature_trans = [item + "_index" for item in feature_cols]
 indexers = [StringIndexer(inputCol=col, outputCol=col + "_index").fit(df) for col in feature_cols]
 cols_for_pearson = [label] + feature_trans
 # 5.2 vector assembler
-vecAssembler = VectorAssembler(inputCols= cols_for_pearson , outputCol="features")
+vecAssembler = VectorAssembler(inputCols=cols_for_pearson, outputCol="features")
 # 5.3 one-hot encoding
 cols_name_vec = [item + "_vec" for item in feature_trans]
-encoder = OneHotEncoderEstimator(inputCols=feature_trans, outputCols = cols_name_vec)
+encoder = OneHotEncoderEstimator(inputCols=feature_trans, outputCols=cols_name_vec)
 # 5.3 pipeline
 pipeline = Pipeline(stages=indexers + [vecAssembler, encoder])
 df_r = pipeline.fit(df).transform(df).cache()
 # 5.4 get correlation matrix then plot it and get correlation paris (index 0: label; index 1-end: features)
-pearsonCorr = Correlation.corr(df_r,column= "features", method='pearson').collect()[0][0].values.reshape(len(feature_trans) + 1, len(feature_trans) + 1)
+pearsonCorr = Correlation.corr(df_r, column="features", method='pearson').collect()[0][0].values.reshape(
+    len(feature_trans) + 1, len(feature_trans) + 1)
 # *here we use 0.7 as the strong correlation threshold
-strong_corr_index = plot_correlation_matrix(pearsonCorr,threshold = 0.7)
+strong_corr_index = plot_correlation_matrix(pearsonCorr, threshold=0.7)
 
 df_trans_list = []
 
@@ -86,52 +87,44 @@ for corr_pair in strong_corr_index:
     # this correlated pair is associated with label
     # in such cases, just remove the correlated feature from features list
     if corr_pair[0] == 0:
-        dc_cols_name_vec.pop(corr_pair[1]-1)
+        dc_cols_name_vec.pop(corr_pair[1] - 1)
         vecAssembler = VectorAssembler(inputCols=[label] + dc_cols_name_vec, outputCol="features_training")
-        df_trans_list.append(vecAssembler.transform(df_r).select("class","features_training"))
+        df_trans_list.append(vecAssembler.transform(df_r).select("class", "features_training"))
     # this correlated pair is between features
     # in such cases, remove either of both and append to the list
     else:
-        dc_cols_name_vec.pop(corr_pair[0]-1)
+        dc_cols_name_vec.pop(corr_pair[0] - 1)
         vecAssembler = VectorAssembler(inputCols=[label] + dc_cols_name_vec, outputCol="features_training")
-        df_trans_list.append(vecAssembler.transform(df_r).select("class","features_training"))
+        df_trans_list.append(vecAssembler.transform(df_r).select("class", "features_training"))
         dc_cols_name_vec = copy.copy(cols_name_vec)
-        dc_cols_name_vec.pop(corr_pair[1]-1)
+        dc_cols_name_vec.pop(corr_pair[1] - 1)
         vecAssembler = VectorAssembler(inputCols=[label] + dc_cols_name_vec, outputCol="features_training")
-        df_trans_list.append(vecAssembler.transform(df_r).select("class","features_training"))
+        df_trans_list.append(vecAssembler.transform(df_r).select("class", "features_training"))
 
-
-# step 6: Project features into a lower dimensional space by using PCA
-df_pca_list = []
+pca = PCA(k=10, inputCol="features_training", outputCol="pca_features")
 for df in df_trans_list:
-    pca = PCA(k=10, inputCol="features_training", outputCol="pca_features")
-    model = pca.fit(df).transform(df).cache()
-    df_pca_list.append(model)
-
-for df in df_pca_list:
-    # step 7: split training and testing set
-    (training, testing) = df.randomSplit([0.8, 0.2], seed=12345)
-    print("training model: "+ str(df_pca_list.index(df)))
+    # step 6: split training and testing set
+    (training, testing) = df.randomSplit([0.8, 0.2], seed=0)
+    # step 6: Project features into a lower dimensional space by using PCA
+    pca_model = pca.fit(training)
+    training = pca_model.transform(training).cache()
+    # transform testing model by using the PCA transformed training model
+    testing  = pca_model.transform(testing).cache()
+    print("training model: " + str(df_trans_list.index(df)))
     print()
     # training original features
     print("------ result of original features ------")
-    nb_classify(training, testing, df.schema.names[0],df.schema.names[1])
-    rf_classify(training, testing, df.schema.names[0],df.schema.names[1])
-    knn_classify(training, testing, df.schema.names[0],df.schema.names[1])
+    nb_classify(training, testing, training.schema.names[0], training.schema.names[1])
+    rf_classify(training, testing, training.schema.names[0], training.schema.names[1])
+    knn_classify(training, testing, training.schema.names[0], training.schema.names[1])
     print()
     # training PCA features
     print("------ result of PCA features ------")
     # naive bayes cant deal with negative input features we skip PCA features here
     # nb_classify(training, testing, df.schema.names[0],df.schema.names[2])
-    rf_classify(training, testing, df.schema.names[0],df.schema.names[2])
-    knn_classify(training, testing, df.schema.names[0],df.schema.names[2])
+    rf_classify(training, testing, training.schema.names[0], training.schema.names[2])
+    knn_classify(training, testing, training.schema.names[0], training.schema.names[2])
     print()
-
-
-
-
-
-
 
 # # 4.1 train the RF model
 # rf_model = RandomForestClassifier(labelCol='label_index', featuresCol='features')

@@ -22,9 +22,9 @@ def predictor(model, grid, training, testing, model_name):
 
     # 5.1 print best hyper-parameter grid
     accuracy = evaluator.evaluate(prediction, {evaluator.metricName: "accuracy"})
-    print(model_name + ' accuracy: ' + str(accuracy))
+    print(model_name + " accuracy: %.8f" % accuracy)
     f1_score = evaluator.evaluate(prediction, {evaluator.metricName: "f1"})
-    print(model_name + ' f1: ' + str(f1_score))
+    print(model_name + " f1: %.8f" % f1_score)
 
     # return best model to print best estimated hyper-parameters
     return model.bestModel
@@ -47,7 +47,7 @@ def nb_classify(training, testing, labelCol, featuresCol):
 
 def rf_classify(training, testing, labelCol, featuresCol):
     # 4.1 train the RF model
-    rf_model = RandomForestClassifier(labelCol=labelCol, featuresCol=featuresCol)
+    rf_model = RandomForestClassifier(labelCol=labelCol, featuresCol=featuresCol,seed=0)
 
     # 4.2 rf parameter grid
     # rf_grid = ParamGridBuilder().addGrid(rf_model.maxDepth, [3, 5, 10])\
@@ -92,7 +92,7 @@ def knn_classify(training, testing, labelCol, featuresCol):
     # uses grid search for cross-validation
     gscv = GridSearchCV(estimator=knn_classifier,
                         param_grid=param_grid,
-                        cv=5,
+                        cv=3,
                         n_jobs=8)
     # training models
     gscv.fit(x_train, y_train)
@@ -101,8 +101,8 @@ def knn_classify(training, testing, labelCol, featuresCol):
     y_pred = gscv.predict(x_test)
 
     # evaluation
-    print("KNeighborsClassifier accuracy: " + str(accuracy_score(y_test, y_pred)))
-    print("KNeighborsClassifier f1      : " + str(f1_score(y_test, y_pred)))
+    print("KNeighborsClassifier accuracy: %.8f" % (accuracy_score(y_test, y_pred)))
+    print("KNeighborsClassifier f1      : %.8f" % (f1_score(y_test, y_pred)))
 
     # print best estimator params
     print("Best estimator :: ", gscv.best_estimator_)
