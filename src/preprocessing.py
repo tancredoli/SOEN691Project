@@ -34,8 +34,7 @@ def init_spark():
 
 def load_data_from_file(spark, filename):
     df = spark.read.csv(filename, header=True)
-    column_names = df.schema.names
-    return df, column_names
+    return df
 
 
 def drop_features(df):
@@ -54,7 +53,7 @@ def deal_missing_values(df):
             df = df.drop(name)
         else:
             df = df.filter(df[name] != "?")
-    return df
+    return df, df.schema.names
 
 
 def encoding_data(df):
@@ -66,6 +65,7 @@ def encoding_data(df):
     df = pipeline.fit(df).transform(df).cache()
 
     df = VectorAssembler(inputCols=column_indexes, outputCol="corr_vec").transform(df).cache()
+    string_indexer_df = VectorAssembler(inputCols=column_indexes[1:], outputCol="feature_vec").transform(df).cache()
 
     strong_index = get_correlation_matrix(df, column_names, 0.6)
     dc_column_indexes = copy.copy(column_indexes)
@@ -77,7 +77,7 @@ def encoding_data(df):
     column_vecs = [item + "_vec" for item in dc_column_indexes]
     df = OneHotEncoderEstimator(inputCols=dc_column_indexes, outputCols=column_vecs).fit(df).transform(df).cache()
     df = VectorAssembler(inputCols=column_vecs, outputCol="features").transform(df).cache()
-    return df.select("class_index", "features")
+    return df.select("class_index", "features"), string_indexer_df
 
 
 def apply_pca(training, testing):

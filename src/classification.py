@@ -9,10 +9,11 @@ import numpy as np
 import preprocessing as dp
 import constants
 import datetime
+import matplotlib.pyplot as plt
 
-def predictor(model, grid, training, testing, model_name):
+def predictor(model, grid, training, testing, model_name, label_col):
     # 4.3 evaluator
-    evaluator = MulticlassClassificationEvaluator(predictionCol='prediction', labelCol='class_index')
+    evaluator = MulticlassClassificationEvaluator(predictionCol='prediction', labelCol=label_col)
 
     # 4.4 cross validation
     cv = CrossValidator(estimator=model, estimatorParamMaps=grid, evaluator=evaluator, numFolds=3, parallelism=8,
@@ -41,7 +42,7 @@ def nb_classify(training, testing, labelCol, featuresCol):
     nb_grid = ParamGridBuilder().addGrid(nb_model.smoothing, [0.0, 0.4, 0.8, 1.0]).build()
 
     # 5.3 predict
-    bestModel = predictor(nb_model, nb_grid, training, testing, 'Naive Bayes Classification')
+    bestModel = predictor(nb_model, nb_grid, training, testing, 'Naive Bayes Classification', labelCol)
 
     # 5.4 print best hyper-parameter
     print("Best hyper-parameter: ")
@@ -61,13 +62,14 @@ def rf_classify(training, testing, labelCol, featuresCol):
         .addGrid(rf_model.numTrees, [10, 50, 100]).build()
 
     # 4.3 predict
-    bestModel = predictor(rf_model, rf_grid, training, testing, 'Random Forest Classification')
+    bestModel = predictor(rf_model, rf_grid, training, testing, 'Random Forest Classification', labelCol)
 
     # 4.4 print best hyper-parameter
     print("Best hyper-parameter: ")
     print("maxDepth: " + str(bestModel._java_obj.getMaxDepth()))
     print("NumTrees: " + str(bestModel._java_obj.getNumTrees()))
     # print("maxBins: " + bestModel._java_obj.getMaxBins())
+    return bestModel
 
 
 def knn_classify(training, testing, labelCol, featuresCol):
@@ -111,18 +113,29 @@ def knn_classify(training, testing, labelCol, featuresCol):
     print("Best estimator :: ", gscv.best_estimator_)
 
 
+def plot_importance(importance, feature_names):
+    plt.figure(figsize=(16, 16))
+    plt.title("Feature importances")
+    plt.barh(range(len(importance)), importance, color="r", align="center")
+    plt.yticks(range(len(importance)), feature_names)
+    plt.ylim([-1, len(importance)])
+    plt.savefig(constants.OUTPUT_DIR + "/feature_imp")
+
+
 if __name__ == '__main__':
     spark = dp.init_spark()
-    original_df, column_names = dp.load_data_from_file(spark, constants.MUSHROOM_DATASET_withLABEL)
+    original_df = dp.load_data_from_file(spark, constants.MUSHROOM_DATASET_withLABEL)
     df = dp.drop_features(original_df)
-    df = dp.deal_missing_values(df).cache()
-    df = dp.encoding_data(df)
+    df, col_names = dp.deal_missing_values(df)
+    df, string_indexer_df = dp.encoding_data(df)
     (training, testing) = df.randomSplit([0.8, 0.2], seed=0)
     training, testing = dp.apply_pca(training, testing)
+
     print("------ result of original features ------")
     start_time = datetime.datetime.now()
     nb_classify(training, testing, training.schema.names[0], training.schema.names[1])
     rf_classify(training, testing, training.schema.names[0], training.schema.names[1])
+
     knn_classify(training, testing, training.schema.names[0], training.schema.names[1])
     end_time = datetime.datetime.now()
     time_take = int((end_time - start_time).total_seconds())
@@ -143,3 +156,15 @@ if __name__ == '__main__':
     end_time = datetime.datetime.now()
     time_take = int((end_time - start_time).total_seconds())
     print("time taken: ", time_take, " seconds")
+
+    # research on feature importance
+    print("-------------------feature importance------------------------")
+    (training_indexer, testing_indexer) = string_indexer_df.randomSplit([0.8, 0.2], seed=0)
+    best_rf = rf_classify(training_indexer, testing_indexer, "class_index", "feature_vec")
+    importance = best_rf.featureImportances
+    plot_importance(importance, col_names[1:])
+
+
+
+
+
