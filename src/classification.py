@@ -2,7 +2,7 @@ from pyspark.ml.classification import NaiveBayes, RandomForestClassifier
 from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 from pyspark.ml.feature import StandardScaler, MinMaxScaler
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, roc_curve, auc
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, roc_curve, auc, precision_score, recall_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
@@ -81,7 +81,7 @@ def rf_classify(training, testing, labelCol, featuresCol):
     print("maxDepth: " + str(bestModel._java_obj.getMaxDepth()))
     print("NumTrees: " + str(bestModel._java_obj.getNumTrees()))
     # print("maxBins: " + bestModel._java_obj.getMaxBins())
-
+    return bestModel
 
 def knn_classify(training, testing, labelCol, featuresCol):
     # convert dataframe to numpy
@@ -117,8 +117,11 @@ def knn_classify(training, testing, labelCol, featuresCol):
     y_pred = gscv.predict(x_test)
 
     # evaluation
-    print("KNeighborsClassifier accuracy: %.8f" % (accuracy_score(y_test, y_pred)))
-    print("KNeighborsClassifier f1      : %.8f" % (f1_score(y_test, y_pred)))
+    print("KNeighborsClassifier accuracy : %.8f" % (accuracy_score(y_test, y_pred)))
+    print("KNeighborsClassifier precision: %.8f" % (precision_score(y_test, y_pred)))
+    print("KNeighborsClassifier recall   : %.8f" % (recall_score(y_test, y_pred)))
+    print("KNeighborsClassifier f1       : %.8f" % (f1_score(y_test, y_pred)))
+
     y_score = gscv.predict_proba(x_test)[:,1]
     plot_auc(y_test, y_score, "knn" + featuresCol)
 
