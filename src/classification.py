@@ -1,15 +1,18 @@
 from pyspark.ml.classification import NaiveBayes, RandomForestClassifier
 from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
+from pyspark.ml.feature import StandardScaler, MinMaxScaler
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
-
+import preprocessing as dp
+import constants
+import datetime
 
 def predictor(model, grid, training, testing, model_name):
     # 4.3 evaluator
-    evaluator = MulticlassClassificationEvaluator(predictionCol='prediction', labelCol='class')
+    evaluator = MulticlassClassificationEvaluator(predictionCol='prediction', labelCol='class_index')
 
     # 4.4 cross validation
     cv = CrossValidator(estimator=model, estimatorParamMaps=grid, evaluator=evaluator, numFolds=3, parallelism=8,
@@ -55,7 +58,7 @@ def rf_classify(training, testing, labelCol, featuresCol):
     #     .addGrid(rf_model.maxBins, [15, 20, 25]).build()
 
     rf_grid = ParamGridBuilder().addGrid(rf_model.maxDepth, [3, 5, 10]) \
-        .addGrid(rf_model.numTrees, [100]).build()
+        .addGrid(rf_model.numTrees, [10, 50, 100]).build()
 
     # 4.3 predict
     bestModel = predictor(rf_model, rf_grid, training, testing, 'Random Forest Classification')
@@ -107,3 +110,36 @@ def knn_classify(training, testing, labelCol, featuresCol):
     # print best estimator params
     print("Best estimator :: ", gscv.best_estimator_)
 
+
+if __name__ == '__main__':
+    spark = dp.init_spark()
+    original_df, column_names = dp.load_data_from_file(spark, constants.MUSHROOM_DATASET_withLABEL)
+    df = dp.drop_features(original_df)
+    df = dp.deal_missing_values(df).cache()
+    df = dp.encoding_data(df)
+    (training, testing) = df.randomSplit([0.8, 0.2], seed=0)
+    training, testing = dp.apply_pca(training, testing)
+    print("------ result of original features ------")
+    start_time = datetime.datetime.now()
+    nb_classify(training, testing, training.schema.names[0], training.schema.names[1])
+    rf_classify(training, testing, training.schema.names[0], training.schema.names[1])
+    knn_classify(training, testing, training.schema.names[0], training.schema.names[1])
+    end_time = datetime.datetime.now()
+    time_take = int((end_time - start_time).total_seconds())
+    print("time taken: ", time_take,  " seconds")
+    print()
+    # training PCA features
+    print("------ result of PCA features ------")
+    scaler = MinMaxScaler(inputCol=training.schema.names[2], outputCol="scaledPCAFeatures")
+    scalerModel = scaler.fit(training)
+    training = scalerModel.transform(training)
+    testing = scalerModel.transform(testing)
+
+    # naive bayes cant deal with negative input features we skip PCA features here
+    start_time = datetime.datetime.now()
+    nb_classify(training, testing, training.schema.names[0], "scaledPCAFeatures")
+    rf_classify(training, testing, training.schema.names[0], training.schema.names[2])
+    knn_classify(training, testing, training.schema.names[0], training.schema.names[2])
+    end_time = datetime.datetime.now()
+    time_take = int((end_time - start_time).total_seconds())
+    print("time taken: ", time_take, " seconds")
