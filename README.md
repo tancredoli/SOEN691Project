@@ -26,20 +26,20 @@ To evaluate the results of models, precision, recall, F1 score and accuracy will
 We will also compare the time cost of training the classifiers to find which one can achieve better performance.
 ## Results
 ### Dataset without PCA reduction
-| Classifier | Accuracy | Recall  | Precision | F1 |
-| ------------- | ------------- | ------------- | ------------- | ------------- |
-| KNN  | 100.00% | 100.00% | 100.00% | 100.00% |
-| Random Forest  | 100.00% | 100.00% | 100.00% | 100.00% |
-| Naive Bayes  | 99.81% |  99.81% | 99.82%  | 99.81% |
+Classifier | Accuracy | Recall  | Precision | F1
+------------- | ------------- | ------------- | ------------- | -------------
+KNN  | 100.00% | 100.00% | 100.00% | 100.00%
+Random Forest  | 100.00% | 100.00% | 100.00% | 100.00%
+Naive Bayes  | 99.81% |  99.81% | 99.82%  | 99.81%
 ![KNN without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/knnfeatures.png)
 ![Random Forest without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Random%20Forest%20Classification%20with%20features.png)
 ![Naive Bayes without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Naive%20Bayes%20Classification%20with%20features.png)
 ### Dataset with PCA reduction
-| Classifier | Accuracy | Recall  | Precision | F1 |
-| ------------- | ------------- | ------------- | ------------- | ------------- |
-| KNN  | 97.77% | 96.28% | 99.08% | 97.66% |
-| Random Forest  | 97.71% | 97.71% | 97.73% | 97.71% |
-| Naive Bayes  | 88.45% |  88.45% | 90.05%  | 88.28% |
+Classifier | Accuracy | Recall  | Precision | F1
+------------- | ------------- | ------------- | ------------- | -------------
+KNN  | 97.77% | 96.28% | 99.08% | 97.66%
+Random Forest  | 97.71% | 97.71% | 97.73% | 97.71%
+Naive Bayes  | 88.45% |  88.45% | 90.05%  | 88.28%
 ![KNN with PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/knnpca_features.png)
 ![Random Forest with PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Random%20Forest%20Classification%20with%20pca_features.png)
 ![Naive Bayes with PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Naive%20Bayes%20Classification%20with%20scaledPCAFeatures.png)
