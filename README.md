@@ -8,24 +8,37 @@ To add more comparisons, this project will use this dataset to train KNN, random
 ## Materials and Methods
 We will use the Mushroom data set from UCI to train three different classifiers based on KNN, Random Forest and Naive Bayes algorithms. We are going to divide the whole process into three individual steps: Data Preprocessing, Training and Evaluation.  
 ### Data Preprocessing
-As soon as we get the raw data. The very first one is preprocessing the dataset. There are six step-by-step methods in this part: Data Selection, Missing Values Imputation, Categorical Features Encoding, Data Normalization, Training and Test set separation and Data Balance.
+As soon as we get the raw data. The very first one is preprocessing the dataset. There are five step-by-step methods in this part: Dealing with missing value, Data Selection, Categorical Features Encoding, Training and Test set separation, Data Transformation.
+#### Dealing with missing value
+As we know, real-world datasets often contain missing values which are not usually acceptable for most machine learning algorithms. Since there are lots of missing values in the original input matrix, the strategy handled this issue happens to be essential. We will use several different ways: if the missing values take majority in a certain feature, we will drop that feature; if not, we will delete the record which contains missing values.  
 #### Data Selection
-There are 22 different physical features for this task while the information extracted from them varies a lot. I.e. Some of the features tell us more useful hints compared with the rest. We are going drop the features that contain over 95% similarity, and we also will perform PCA technique to reduce the dimension of this dataset. In addition, there are four different labels in the raw dataset which are definitely edible, definitely poisonous, or of unknown edibility and not recommended. Since we believe that the last two of them would disturb the classifier, we are going to discard the raws with these two labels at the beginning. 
-#### Missing Values Imputation
-As we know, real-world datasets often contain missing values which are not usually acceptable for most machine learning algorithms. After the Data Selection procedure, we are going to apply a substitution strategy for unknown feature values. Since there are lots of missing values in the original input matrix, the strategy handled this issue happens to be essential. We will use several different ways, e.g. throwing instances with missing values or imputing missing value with the most frequent value in that raw to deal with it and compare the result of them respectively. 
+There are 22 different physical features for this task while the information extracted from them varies a lot. I.e. Some of the features tell us more useful hints compared with the rest. We are going to compute the Pearson's correlation coefficients of all features and drop one feature in each strongly correlated feature pair. In addition, we will also drop the feature which has only one distinct value.
 #### Categorical Features Encoding
 We already get reasonable data that is fully filled. We are going to deal with categorical data issues. Since all of the data attributes in the datasets are categorical. And categorical data are not readable for the algorithms we select. We prefer to use one-hot encoding technique to convert the characterized feature matrix into vectorized feature space.
-#### Data Normalization
-Most machine learning methods are more powerful when the data are scaled into one uniform range. We will normalize the features using StandardScaler provided by Spark to make each feature scale to unit standard deviation.
 #### Training and Test set separation
-After data normalization is done, we are going to separate the whole data set into training and test set respectively. The ratio between the training and test data is 80%: 20%.
-#### Data balance 
-Since we get the training set, we will observe the ratio of different labeled instances to see if there is a class imbalance in the training set. we will handle this issue by down-sampling the major class and make the ratio of two classes as 50%: 50%.
+After encoding the data, we are going to separate the whole data set into training and test set respectively. The ratio between the training and test data is 80%: 20%.
+#### Data Transformation
+Since we apply the one-hot encoding to the features, each categorical feature will be represented as a higher dimensional vector. Therefore, we also will perform PCA technique to reduce the dimension of this dataset. 
 ### Training
-For the training part, we are going to build a KNN classifier, a Random Forest classifier and Naive Bayes classifier based on the training set by using a hyperparameter search with 5-fold cross-validation techniques to find the best hyperparameters for building the model. Besides, based on common sense, the penalty of “failing to detect a poisonous mushroom” should be much higher than “failing to recognize an edible mushroom”. In other words, it is more important to detect a poisonous mushroom. So we will use a customized cost matrix to help build the classifiers as well.
-### Evaluation 
-To evaluate the results of models, precision, recall, F1 score and accuracy will be used as the main standard. We will compare the two classifiers with those scores by testing the test set to see which one is better. 
-We will also compare the time cost of training the classifiers to achieve better performance. 
+For the training part, we are going to build a KNN classifier, a Random Forest classifier and Naive Bayes classifier based on the training set by using a hyperparameter search with 5-fold cross-validation techniques to find the best hyperparameters for building the model. In addition, we will also train the same classifiers using the dataset before performing PCA reduction and to compare the results.
+### Evaluation and Analysis
+To evaluate the results of models, precision, recall, F1 score and accuracy will be used as the main standard. We will compare the two classifiers with those scores by testing the test set to see which one is better. In addition, we will analyze the feature importance using the Random Forest classifier.
+We will also compare the time cost of training the classifiers to find which one can achieve better performance.
+## Results
+###Dataset without PCA reduction
+| Classifier | Accuracy | Recall  | Precision | F1 |
+| ------------- | ------------- | ------------- | ------------- | ------------- |
+| KNN  | 100.00% | 100.00% | 100.00% | 100.00% |
+| Random Forest  | 100.00% | 100.00% | 100.00% | 100.00% |
+| Naive Bayes  | 99.81% |  99.81% | 99.82%  | 99.81% |
+
+###Dataset with PCA reduction
+| Classifier | Accuracy | Recall  | Precision | F1 |
+| ------------- | ------------- | ------------- | ------------- | ------------- |
+| KNN  | 97.77% | 96.28% | 99.08% | 97.66% |
+| Random Forest  | 97.71% | 97.71% | 97.73% | 97.71% |
+| Naive Bayes  | 88.45% |  88.45% | 90.05%  | 88.28% |
+
 ## Reference
 [1] Dua, D. and Graff, C. (2019). UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science.<br/>
 [2] Lima, A. D., Fortes, R. C., Novaes, M. G., & Percário, S. (2012). Poisonous mushrooms; a review of the most common intoxications. Nutricion hospitalaria, 27(2), 402-408.<br/>
