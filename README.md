@@ -67,7 +67,9 @@ Using dataset with PCA redunction features, the scores are all lower compared wi
 In the project, we mainly applied feature selection, feature transformation and three classifiers on the dataset. We compared the trainning results of knn, random forest and naive bayes, also we compared the trainning results before and after applying PCA feature reduction technique. To conclude, we find:<br/>
 1. Random forest and knn models provide the best prediction for this dataset, while Naive Bayes model’s accuracy and f1 score are relatively lower than other two models, but it can still provide a good result. <br/>
 2. The training time cost for data applied PCA is lower than the original 83-dimensional data (34 seconds vs. 42 seconds), however, the trade-off is lower accuracy and f1 score. <br/>
-3. The odor and spore-print-color siginificantly influence the classification of the edible/poisonous mushroom.<br/>
+3. The odor and spore-print-color siginificantly influence the classification of the edible/poisonous mushroom.
+<br/>
+
 The limitation of this research is mainly due to the characteristic of this dataset. Since this dataset is well organized and with few noisy values, it is easy to get good results. In the future work, we can perform the similar techniques on more complicated data to see the effects. On the other hand, from this research we can conclude that a mushroom’s edibility is high related with its physical features. However, in this dataset, these features have already been extracted and listed manually, which is very time consuming. In the future, we can use photos of different mushrooms to train  a CNN to do the edible/poisonous classification to reduce human work. 
 
 ## Reference
