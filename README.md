@@ -31,7 +31,6 @@ We will also compare the time cost of training the classifiers to find which one
 | KNN  | 100.00% | 100.00% | 100.00% | 100.00% |
 | Random Forest  | 100.00% | 100.00% | 100.00% | 100.00% |
 | Naive Bayes  | 99.81% |  99.81% | 99.82%  | 99.81% |
-| Time Cost | 34 seconds |
 ![KNN without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/knnfeatures.png)
 ![Random Forest without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Random%20Forest%20Classification%20with%20features.png)
 ![Naive Bayes without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Naive%20Bayes%20Classification%20with%20features.png)
@@ -41,8 +40,9 @@ We will also compare the time cost of training the classifiers to find which one
 | KNN  | 97.77% | 96.28% | 99.08% | 97.66% |
 | Random Forest  | 97.71% | 97.71% | 97.73% | 97.71% |
 | Naive Bayes  | 88.45% |  88.45% | 90.05%  | 88.28% |
-| Time Cost | 42 seconds |
-
+![KNN with PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/knnpca_features.png)
+![Random Forest with PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Random%20Forest%20Classification%20with%20pca_features.png)
+![Naive Bayes with PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Naive%20Bayes%20Classification%20with%20scaledPCAFeatures.png)
 ## Reference
 [1] Dua, D. and Graff, C. (2019). UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science.<br/>
 [2] Lima, A. D., Fortes, R. C., Novaes, M. G., & Percário, S. (2012). Poisonous mushrooms; a review of the most common intoxications. Nutricion hospitalaria, 27(2), 402-408.<br/>
