@@ -20,31 +20,48 @@ After encoding the data, we are going to separate the whole data set into traini
 #### Data Transformation
 Since we apply the one-hot encoding to the features, each categorical feature will be represented as a higher dimensional vector. Therefore, we also will perform PCA technique to reduce the dimension of this dataset. 
 ### Training
-For the training part, we are going to build a KNN classifier, a Random Forest classifier and Naive Bayes classifier based on the training set by using a hyperparameter search with 5-fold cross-validation techniques to find the best hyperparameters for building the model. In addition, we will also train the same classifiers using the dataset before performing PCA reduction and to compare the results.
+For the training part, we are going to build a KNN classifier, a Random Forest classifier and Naive Bayes classifier based on the training set by using a hyperparameter search with 5-fold cross-validation techniques to find the best hyperparameters for building the model. Since we transfer the oringinal categorical data to vectors, we will use the distance between vectors as the distance in determination of the k nearest neighbors. In addition, we will also train the same classifiers using the dataset before performing PCA reduction and to compare the results.
 ### Evaluation and Analysis
 To evaluate the results of models, precision, recall, F1 score and accuracy will be used as the main standard. We will compare the two classifiers with those scores by testing the test set to see which one is better. In addition, we will analyze the feature importance using the Random Forest classifier.
 We will also compare the time cost of training the classifiers to find which one can achieve better performance.
 ## Results
+
+### Correlation Matrix
+<img title="correlation matrix" src="https://github.com/xwang1109/SOEN691Project/blob/master/output/correlation_matrix_new.png" width=70%/>
+From the Pearson's correlation matrix, we can find that gill-attachment and veil-color are strongly correlated. Therefore we can drop one of them to train the classifier to reduce overhead. 
+
+### Feature Importances
+<img title="feature importance" src="https://github.com/xwang1109/SOEN691Project/blob/master/output/feature_imp.png"/>
+The feature importances graph shows that odor and spore-print-color are two most important features to classify an edible/poisonous mushroom, while veil-color and gill-attachment have little influence on the classification. 
 ### Dataset without PCA reduction
-Classifier | Accuracy | Recall  | Precision | F1
-------------- | ------------- | ------------- | ------------- | -------------
-KNN  | 100.00% | 100.00% | 100.00% | 100.00%
-Random Forest  | 100.00% | 100.00% | 100.00% | 100.00%
-Naive Bayes  | 99.81% |  99.81% | 99.82%  | 99.81%
+
+Classifier | Accuracy | Recall  | Precision | F1 | Best Hyperparameters
+------------- | ------------- | ------------- | ------------- | ------------- |---
+KNN  | 100.00% | 100.00% | 100.00% | 100.00% | number of neighbors = 10
+Random Forest  | 100.00% | 100.00% | 100.00% | 100.00% | maxDepth = 5, NumTrees = 10
+Naive Bayes  | 99.81% |  99.81% | 99.82%  | 99.81% | Smoothing = 0
+Time cost | 42 seconds
+
+<img title="KNN without PCA" src="https://github.com/xwang1109/SOEN691Project/blob/master/output/knnfeatures.png" width=70%/>
+<img title="Random Forest without PCA" src="https://github.com/xwang1109/SOEN691Project/blob/master/output/Random%20Forest%20Classification%20with%20features.png" width=70%/>
+<img title="Naive Bayes without PCA" src="https://github.com/xwang1109/SOEN691Project/blob/master/output/Naive%20Bayes%20Classification%20with%20features.png" width=70%/>
 <br/>
-![KNN without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/knnfeatures.png)
-![Random Forest without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Random%20Forest%20Classification%20with%20features.png)
-![Naive Bayes without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Naive%20Bayes%20Classification%20with%20features.png)
+Using dataset with original features after one-hot enconding, the KNN and Random Forest can reach 100% accuracy and F1 score, which is better than Naive Bayes.
+
 ### Dataset with PCA reduction
-Classifier | Accuracy | Recall  | Precision | F1
-------------- | ------------- | ------------- | ------------- | -------------
-KNN  | 97.77% | 96.28% | 99.08% | 97.66%
-Random Forest  | 97.71% | 97.71% | 97.73% | 97.71%
-Naive Bayes  | 88.45% |  88.45% | 90.05%  | 88.28%
+Classifier | Accuracy | Recall  | Precision | F1 | Best Hyperparameters
+------------- | ------------- | ------------- | ------------- | ------------- |---
+KNN  | 97.77% | 96.28% | 99.08% | 97.66% | number of neighbors = 25
+Random Forest  | 97.71% | 97.71% | 97.73% | 97.71% | maxDepth = 5, NumTrees = 10
+Naive Bayes  | 88.45% |  88.45% | 90.05%  | 88.28% | Smoothing = 0
+Time cost | 34 seconds
+
+<img title="KNN with PCA" src="https://github.com/xwang1109/SOEN691Project/blob/master/output/knnpca_features.png" width=70%/>
+<img title="Random Forest with PCA" src="https://github.com/xwang1109/SOEN691Project/blob/master/output/Random%20Forest%20Classification%20with%20pca_features.png" width=70%/>
+<img title="Naive Bayes with PCA" src="https://github.com/xwang1109/SOEN691Project/blob/master/output/Naive%20Bayes%20Classification%20with%20scaledPCAFeatures.png" width=70%/>
 <br/>
-![KNN with PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/knnpca_features.png)
-![Random Forest with PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Random%20Forest%20Classification%20with%20pca_features.png)
-![Naive Bayes with PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Naive%20Bayes%20Classification%20with%20scaledPCAFeatures.png)
+Using dataset with PCA redunction features, the scores are all lower compared with 3 classifiers than the previous case, but the trainning time cost is also lower. The naive bayes classifier is most influenced by the PCA reduction: the scores significantly decrease by 10%. That is because PCA features have negative values, but naive bayes can only deal with non-negative values. So we have to apply a min-max scaler to rescale the features, which will influence the characteristics of the data. The results also show that KNN and Random Forest classifiers can achieve better trainning results than Naive Bayes.
+
 ## Reference
 [1] Dua, D. and Graff, C. (2019). UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science.<br/>
 [2] Lima, A. D., Fortes, R. C., Novaes, M. G., & Percário, S. (2012). Poisonous mushrooms; a review of the most common intoxications. Nutricion hospitalaria, 27(2), 402-408.<br/>
