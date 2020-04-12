@@ -25,19 +25,23 @@ For the training part, we are going to build a KNN classifier, a Random Forest c
 To evaluate the results of models, precision, recall, F1 score and accuracy will be used as the main standard. We will compare the two classifiers with those scores by testing the test set to see which one is better. In addition, we will analyze the feature importance using the Random Forest classifier.
 We will also compare the time cost of training the classifiers to find which one can achieve better performance.
 ## Results
-###Dataset without PCA reduction
+### Dataset without PCA reduction
 | Classifier | Accuracy | Recall  | Precision | F1 |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
 | KNN  | 100.00% | 100.00% | 100.00% | 100.00% |
 | Random Forest  | 100.00% | 100.00% | 100.00% | 100.00% |
 | Naive Bayes  | 99.81% |  99.81% | 99.82%  | 99.81% |
-
-###Dataset with PCA reduction
+| Time Cost | 34 seconds |
+![KNN without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/knnfeatures.png)
+![Random Forest without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Random%20Forest%20Classification%20with%20features.png)
+![Naive Bayes without PCA](https://github.com/xwang1109/SOEN691Project/blob/master/output/Naive%20Bayes%20Classification%20with%20features.png)
+### Dataset with PCA reduction
 | Classifier | Accuracy | Recall  | Precision | F1 |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
 | KNN  | 97.77% | 96.28% | 99.08% | 97.66% |
 | Random Forest  | 97.71% | 97.71% | 97.73% | 97.71% |
 | Naive Bayes  | 88.45% |  88.45% | 90.05%  | 88.28% |
+| Time Cost | 42 seconds |
 
 ## Reference
 [1] Dua, D. and Graff, C. (2019). UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science.<br/>
